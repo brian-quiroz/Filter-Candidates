@@ -1,0 +1,111 @@
+<script type="text/javascript">
+  function getNewCol(val) {
+    let $newCol = $("<div>", {"class": "col-md-1"});
+    let $newTag = (val.substring(0,4) == "http") ? $("<img>", {src: val, height: 50, width: 50}) : $("<p>", {text: val});
+    $newCol.append($newTag);
+    return $newCol;
+  }
+
+  function getNewDDI(val) {
+    let $newDDI = $("<a>", {"class": "dropdown-item", href: "#", text: val});
+    $newDDI.click((e) => {
+      e.preventDefault();
+      postRegion(val);
+      console.log("Updating...");
+      $('#generate-here').html('');
+      renderCandidatesData();
+    })
+    return $newDDI;
+  }
+
+  const renderCandidatesData = async () => {
+
+    const candidatesData = await fetch('/candidatesData')
+        .then(res => res.json())
+        .catch(error => console.log("ERROR"));
+
+    if (candidatesData.length == 0) {
+      $("#generate-here").append($("<p>", {text: "Ningún candidato encontrado!"}));
+      return;
+    }
+
+    let $titleWrapper = $("<div>");
+    let $titles = $("<div>", {"class": "row"});
+    Object.keys(candidatesData[0]).forEach(key => $titles.append(getNewCol(key.substring(2))));
+    $titleWrapper.append($titles);
+    let $titleHrTag = $("<hr>");
+    $titleWrapper.append($titleHrTag);
+    $("#generate-here").append($titleWrapper);
+
+    for (let i = 0; i < candidatesData.length; i++) {
+      let dict = candidatesData[i]
+
+      let $newWrapper = $("<div>");
+
+      let $newRow = $("<div>", {"class": "row"});
+      Object.keys(dict).forEach(key => $newRow.append(getNewCol(dict[key])))
+      $newWrapper.append($newRow);
+
+      let $newHrTag = $("<hr>");
+      $newWrapper.append($newHrTag);
+
+      $("#generate-here").append($newWrapper);
+    }
+  }
+
+  const renderRegions = async () => {
+    const regions = await fetch('/regions')
+      .then(res => res.json())
+      .catch(error => console.log("ERROR"));
+
+    let $regionsDD = $("#regionsDropdown");
+    regions.forEach(region => $regionsDD.append(getNewDDI(region)))
+  }
+
+  const postRegion = async (val) => {
+    fetch('/updateRegions', {
+        method: 'POST',
+        headers: new Headers({'content-type': 'application/json'}),
+        body: JSON.stringify({
+            val
+        })
+    }).then(function (response) { // At this point, Flask has printed our JSON
+        return response.text();
+    }).then(function (text) {
+
+    console.log('POST response: ');
+    console.log(text);
+    });
+  }
+
+  renderCandidatesData();
+  renderRegions();
+</script>
+
+<head>
+  <script src="https://code.jquery.com/jquery-3.1.1.js"></script>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+<body>
+  <div>
+    <h1 class="text-center" id="title">Candidatos Filtrados</h1>
+
+    <div class="container-fluid" id="dd1">
+      <div class="dropdown">
+        <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          Elegir Región
+        </button>
+        <div class="dropdown-menu" id="regionsDropdown" aria-labelledby="dropdownMenuButton">
+        </div>
+      </div>
+    </div>
+    <br>
+
+    <div class="container-fluid" id="generate-here">
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+</body>
