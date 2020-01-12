@@ -141,7 +141,7 @@ def selectStudies(selected):
     for i in range(0, len(g.get_studies())):
         print(str(i + 1) + ") " + g.get_studies()[i])
     opt3 = int(input("Opción: "))
-    g.append_to_history(["studies", lambda selected, grade: filterStudies(selected, grade), opt3])
+    g.append_to_history(["studies", lambda selected, level: filterStudies(selected, level), opt3])
     return filterStudies(selected, opt3)
 
 def selectSentence(selected):

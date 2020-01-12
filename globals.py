@@ -30,6 +30,7 @@ class Globals:
     def get_history(self):
         return self.__history
     def append_to_history(self, val):
+        self.__history = [x for x in self.__history if x[0] != val[0]]
         self.__history.append(val)
     def del_from_history(self, ind):
         del self.__history[ind]

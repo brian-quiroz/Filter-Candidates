@@ -12,8 +12,8 @@ def filterPartiesExcl (filt, inds):
 def filterExperience(selected):
     return [x for x in selected if x["Experiencia_Pol"] == "Sí"]
 
-def filterStudies(selected, grade):
-    return [x for x in selected if "Estudios" in x and g.get_studies().index(x["Estudios"]) >= grade - 1]
+def filterStudies(selected, level):
+    return [x for x in selected if "Estudios" in x and g.get_studies().index(x["Estudios"]) >= level - 1]
 
 def filterSentence(selected):
     return [x for x in selected if x["ConSentencia"] == "Sin Sentencia"]
@@ -25,7 +25,7 @@ def filterAgeUpper(selected, upper):
     return [x for x in selected if int(x["Edad"]) <= upper]
 
 def filterGender(selected, gender):
-    return [x for x in selected if x["Sexo"] == "Hombre"]
+    return [x for x in selected if x["Sexo"] == gender]
 
 def filterCandidate(selected, name):
     return [x for x in selected if x["Candidato"] == name.upper()]
