@@ -1,6 +1,5 @@
 import sys
 import json
-from params import *
 from filters import *
 from filterCandidates import run2
 from globals import g
