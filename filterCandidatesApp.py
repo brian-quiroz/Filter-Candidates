@@ -109,6 +109,24 @@ def updateCandidate():
     g.append_to_history(["candidate", lambda selected, name: filterCandidate(selected, name), val])
     return 'OK', 200
 
+@app.route('/history', methods=['GET'])
+def history():
+    hist = g.get_history()
+    actions = [x[0] for x in hist]
+    vals = [x[2] for x in hist]
+    message = []
+    for action, val in zip(actions, vals):
+        message.append(g.get_tag_text(action, val))
+    return jsonify(message)
+
+@app.route('/delAction', methods=['POST'])
+def delAction():
+    print('Incoming..')
+    print(request.get_json())  # parse as JSON
+    val = int(request.get_json()['ind'])
+    g.del_from_history(val)
+    return 'OK', 200
+
 @app.route('/test')
 def test_page():
     return render_template('index.html')

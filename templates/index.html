@@ -1,9 +1,19 @@
 <head>
+  <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/styles.css') }}">
   <script src="https://code.jquery.com/jquery-3.1.1.js"></script>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 </head>
 
 <script type="text/javascript">
+
+  let partiesInclQueue = [];
+  let partiesExclQueue = [];
+  let getPartiesInclQueue = () => partiesInclQueue;
+  let getPartiesExclQueue = () => partiesExclQueue;
+  let pushToPartiesInclQueue = (newVal) => partiesInclQueue.push(newVal);
+  let pushToPartiesExclQueue = (newVal) => partiesExclQueue.push(newVal);
+  let clearPartiesInclQueue = () => partiesInclQueue = [];
+  let clearPartiesExclQueue = () => partiesExclQueue = [];
 
   $(document).ready(function() {
     renderRegions();
@@ -49,6 +59,9 @@
 
       $("#generate-here").append($newWrapper);
     }
+
+    $('#generate-filters').html('');
+    renderHistory();
   }
 
   function getNewCol(val) {
@@ -73,6 +86,7 @@
       e.preventDefault();
       postRegion(val);
       console.log("Updating...");
+      $('#generate-filters').html('');
       $('#generate-here').html('');
       renderCandidatesData();
     });
@@ -97,32 +111,32 @@
     const parties = await fetch('/parties')
       .then(res => res.json())
       .catch(error => console.log("ERROR"));
-
-    let partiesInclQueue = [];
-    let partiesExclQueue = [];
     let $ddMPartiesIncl = $("#ddMPartiesIncl");
     let $ddMPartiesEcxl = $("#ddMPartiesExcl");
-    parties.forEach(party => $ddMPartiesIncl.append(getNewDDIParty(partiesInclQueue, party)));
-    parties.forEach(party => $ddMPartiesEcxl.append(getNewDDIParty(partiesExclQueue, party)));
-    submitPartiesOnClick("#submitPartiesIncl", "/updatePartiesIncl", partiesInclQueue);
-    submitPartiesOnClick("#submitPartiesExcl", "/updatePartiesExcl", partiesExclQueue);
+    parties.forEach(party => $ddMPartiesIncl.append(getNewDDIParty("incl", party)));
+    parties.forEach(party => $ddMPartiesEcxl.append(getNewDDIParty("excl", party)));
+    submitPartiesOnClick("#submitPartiesIncl", "/updatePartiesIncl");
+    submitPartiesOnClick("#submitPartiesExcl", "/updatePartiesExcl");
   }
 
-  function getNewDDIParty(queue, val) {
+  function getNewDDIParty(type, val) {
     let $newDDI = $("<a>", {"class": "dropdown-item", href: "#", text: val});
     $newDDI.click((e) => {
       e.preventDefault();
-      queue.push(val);
+      if (type == "incl") pushToPartiesInclQueue(val)
+      if (type == "excl") pushToPartiesExclQueue(val)
       console.log("Added " + val + " to the queue!")
     })
     return $newDDI;
   }
 
-  function submitPartiesOnClick(submitId, url, queue) {
+  function submitPartiesOnClick(submitId, url) {
     $(submitId).click((e) => {
       e.preventDefault();
-      postParty(url, queue);
+      if (submitId == "#submitPartiesIncl") postParty(url, getPartiesInclQueue());
+      if (submitId == "#submitPartiesExcl") postParty(url, getPartiesExclQueue());
       console.log("Updating...");
+      $('#generate-filters').html('');
       $('#generate-here').html('');
       renderCandidatesData();
     });
@@ -148,6 +162,7 @@ function renderExperience() {
     e.preventDefault();
     postExperience();
     console.log("Updating...");
+    $('#generate-filters').html('');
     $('#generate-here').html('');
     renderCandidatesData();
   });
@@ -183,6 +198,7 @@ function getNewDDIStudyLevel(val) {
     e.preventDefault();
     postStudyLevel(val);
     console.log("Updating...");
+    $('#generate-filters').html('');
     $('#generate-here').html('');
     renderCandidatesData();
   });
@@ -208,6 +224,7 @@ function renderSentence() {
     e.preventDefault();
     postSentence();
     console.log("Updating...");
+    $('#generate-filters').html('');
     $('#generate-here').html('');
     renderCandidatesData();
   });
@@ -243,6 +260,7 @@ function getNewDDIAge(url, val) {
     e.preventDefault();
     postAge(url, val);
     console.log("Updating...");
+    $('#generate-filters').html('');
     $('#generate-here').html('');
     renderCandidatesData();
   });
@@ -276,6 +294,7 @@ function getNewDDIGender(val) {
     e.preventDefault();
     postGender(val);
     console.log("Updating...");
+    $('#generate-filters').html('');
     $('#generate-here').html('');
     renderCandidatesData();
   });
@@ -302,6 +321,7 @@ function processCandidate() {
     let candidate = $("#inputCandidate").val()
     postCandidate(candidate);
     console.log("Updating...");
+    $('#generate-filters').html('');
     $('#generate-here').html('');
     renderCandidatesData();
   });
@@ -321,15 +341,66 @@ const postCandidate = async (val) => {
   });
 }
 
+const renderHistory = async () => {
+  const history = await fetch('/history')
+    .then(res => res.json())
+    .catch(error => console.log("ERROR"));
+
+  let $generateFilters = $("#generate-filters");
+
+  let $titleDiv = $("<div>", {"class": "col-md-1"});
+  let $title = $("<p>", {text: "Filtros: "});
+  $titleDiv.append($title);
+  $generateFilters.append($titleDiv);
+
+  let $filtersDiv = $("<div>", {"class": "col-md-11 flexFilter"});
+  history.forEach((description, ind) => $filtersDiv.append(getNewActionTag(description, ind)));
+  $generateFilters.append($filtersDiv);
+}
+
+function getNewActionTag(description, ind) {
+  let $newCol = $("<div>", {"class": "flexItem"});
+  let $newIcon = $("<i>", {"class": "fa fa-window-close"});
+  let $newLabel = $("<span>", {"class": "badge badge-primary", text: description + " "});
+  $newLabel.append($newIcon);
+  $newCol.append($newLabel);
+  $newIcon.click((e) => {
+    e.preventDefault();
+    postDelAction(ind);
+    $('#generate-filters').html('');
+    renderHistory();
+    console.log(description.slice(0,7));
+    if (description.slice(0,7) == "Incluir") clearPartiesInclQueue();
+    if (description.slice(0,7) == "Excluir") clearPartiesExclQueue();
+    console.log("Updating...");
+  });
+  return $newCol;
+}
+
+const postDelAction = async (ind) => {
+  fetch('/delAction', {
+      method: 'POST',
+      headers: new Headers({'content-type': 'application/json'}),
+      body: JSON.stringify({ind})
+  }).then(function (response) { // At this point, Flask has printed our JSON
+      return response.text();
+  }).then(function (text) {
+
+  console.log('POST response: ');
+  console.log(text);
+  });
+}
+
+
 </script>
 
 <body>
   <div>
     <h1 class="text-center" id="title">Candidatos Filtrados</h1>
 
-    <div class="container-fluid" id="dd-container">
-      <div class="row">
-        <div class="col-md-1">
+    <div id="containerFilterOptions">
+      <div class="flexFilter">
+        <div class="flexItem">
           <div class="dropdown" id="ddRegions">
             <button class="btn btn-secondary dropdown-toggle" type="button" id="ddMBRegions" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
               Región
@@ -339,40 +410,29 @@ const postCandidate = async (val) => {
           </div>
         </div>
 
-        <div class="col-md-1">
-          <div class="dropdown" id="ddPartiesIncl">
+        <div class="flexItem">
+          <div class="dropdown d-inline-block" id="ddPartiesIncl">
             <button class="btn btn-secondary dropdown-toggle" type="button" id="ddMBPartiesIncl" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
               Partidos
             </button>
             <div class="dropdown-menu" id="ddMPartiesIncl" aria-labelledby="dropdownMenuButton">
             </div>
           </div>
-        </div>
-        <div class="col-md-1">
           <button type="button" class="btn btn-primary" id="submitPartiesIncl">Incluir</button>
         </div>
 
-        <div class="col-md-1">
-          <div class="dropdown" id="ddPartiesExcl">
+        <div class="flexItem">
+          <div class="dropdown d-inline-block" id="ddPartiesExcl">
             <button class="btn btn-secondary dropdown-toggle" type="button" id="ddMBPartiesExcl" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
               Partidos
             </button>
             <div class="dropdown-menu" id="ddMPartiesExcl" aria-labelledby="dropdownMenuButton">
             </div>
           </div>
-        </div>
-        <div class="col-md-1">
           <button type="button" class="btn btn-primary" id="submitPartiesExcl">Excluir</button>
         </div>
 
-        <div class="col-md-1">
-          <div class="form-check" id="fcExperience">
-            <input type="checkbox" class="form-check-input" id="cbExperience">
-            <label class="form-check-label" id="cblblExperience" for="exampleCheck1">Experiencia Pol.</label>
-          </div>
-        </div>
-
-        <div class="col-md-1">
+        <div class="flexItem">
           <div class="dropdown" id="ddStudies">
             <button class="btn btn-secondary dropdown-toggle" type="button" id="ddMBStudies" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
               Estudios
@@ -382,34 +442,7 @@ const postCandidate = async (val) => {
           </div>
         </div>
 
-        <div class="col-md-1">
-          <div class="form-check" id="fcSentence">
-            <input type="checkbox" class="form-check-input" id="cbSentence">
-            <label class="form-check-label" id="cblblSentence" for="exampleCheck1">Sin Sentencias</label>
-          </div>
-        </div>
-
-        <div class="col-md-1">
-          <div class="dropdown" id="ddAgeLower">
-            <button class="btn btn-secondary dropdown-toggle" type="button" id="ddMBAgeLower" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              Edad Mín.
-            </button>
-            <div class="dropdown-menu" id="ddMAgeLower" aria-labelledby="dropdownMenuButton">
-            </div>
-          </div>
-        </div>
-
-        <div class="col-md-1">
-          <div class="dropdown" id="ddAgeUpper">
-            <button class="btn btn-secondary dropdown-toggle" type="button" id="ddMBAgeUpper" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              Edad Máx.
-            </button>
-            <div class="dropdown-menu" id="ddMAgeUpper" aria-labelledby="dropdownMenuButton">
-            </div>
-          </div>
-        </div>
-
-        <div class="col-md-1">
+        <div class="flexItem">
           <div class="dropdown" id="ddGenders">
             <button class="btn btn-secondary dropdown-toggle" type="button" id="ddMBGenders" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
               Género
@@ -419,13 +452,60 @@ const postCandidate = async (val) => {
           </div>
         </div>
 
-        <div class="col-md-1">
-          <form id="formCandidate" action="" method="GET">
-            <input class="form-control" id="inputCandidate" type="text" placeholder="Default input">
-            <button type="submit" class="btn btn-primary" id="submitCandidate">Submit</button>
+      </div>
+
+      <br>
+
+      <div class="flexFilter">
+        <div class="flexItem">
+          <div class="dropdown" id="ddAgeLower">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="ddMBAgeLower" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              Edad Mín.
+            </button>
+            <div class="dropdown-menu" id="ddMAgeLower" aria-labelledby="dropdownMenuButton">
+            </div>
+          </div>
+        </div>
+
+        <div class="flexItem">
+          <div class="dropdown" id="ddAgeUpper">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="ddMBAgeUpper" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              Edad Máx.
+            </button>
+            <div class="dropdown-menu" id="ddMAgeUpper" aria-labelledby="dropdownMenuButton">
+            </div>
+          </div>
+        </div>
+
+        <div class="flexItem">
+          <div class="form-check" id="fcExperience">
+            <input type="checkbox" class="form-check-input" id="cbExperience">
+            <label class="form-check-label" id="cblblExperience" for="exampleCheck1">Experiencia Política</label>
+          </div>
+        </div>
+
+        <div class="flexItem">
+          <div class="form-check" id="fcSentence">
+            <input type="checkbox" class="form-check-input" id="cbSentence">
+            <label class="form-check-label" id="cblblSentence" for="exampleCheck1">Sin Sentencias</label>
+          </div>
+        </div>
+
+        <div class="flexItem">
+          <form class="input-group" id="formCandidate" action="" method="GET">
+            <input class="form-control" id="inputCandidate" type="text" placeholder="Nombre Completo">
+            <span class="input-group-btn">
+              <button type="submit" class="btn btn-primary" id="submitCandidate">Buscar</button>
+            </span>
           </form>
         </div>
 
+      </div>
+    </div>
+    <br>
+
+    <div class="container-fluid" id="containerFilterHistory">
+      <div class="row" id="generate-filters">
       </div>
     </div>
     <br>
@@ -437,4 +517,5 @@ const postCandidate = async (val) => {
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </body>

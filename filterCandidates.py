@@ -17,7 +17,7 @@ def run2():
     selected = rerun(data)
 
     people = [x["Candidato"] for x in selected]
-    sample = people[:10]
+    sample = people[:5]
     print("Selected " + str(len(selected)))
     for i in range(0, len(sample)):
         scrape(sample[i].lower())
@@ -104,7 +104,7 @@ def run():
 def selectRegions(selected):
     print("\nSelecciona una región:")
     for i in range(0, len(g.get_regions())):
-        print(str(i + 1) + ") " + g.get_regions()[i])
+        print(str(i + 1) + ") " + g.get_value_from_regions(i))
     opt3 = int(input("Opción: "))
     g.append_to_history(["regions", lambda selected, ind: filterRegions(selected, ind), opt3])
     return filterRegions(selected, opt3)
@@ -117,7 +117,7 @@ def selectParties(selected):
 
     print("\nElegir partido(s)")
     for i in range(0, len(g.get_parties())):
-        print(str(i + 1) + ") " + g.get_parties()[i])
+        print(str(i + 1) + ") " + g.get_value_from_parties(i))
 
     if (opt3 == 1):
         filt = selected
@@ -139,7 +139,7 @@ def selectExperience(selected):
 def selectStudies(selected):
     print("\nElegir candidatos cuyo mínimo nivel de estudio:")
     for i in range(0, len(g.get_studies())):
-        print(str(i + 1) + ") " + g.get_studies()[i])
+        print(str(i + 1) + ") " + g.get_value_from_studies(i))
     opt3 = int(input("Opción: "))
     g.append_to_history(["studies", lambda selected, level: filterStudies(selected, level), opt3])
     return filterStudies(selected, opt3)
@@ -189,19 +189,19 @@ def printFilters():
     for action in g.get_history():
         tag = action[0]
         if tag == "regions":
-            print(str(i) + ") Solo candidatos de la región " + g.get_regions()[action[2] - 1])
+            print(str(i) + ") Solo candidatos de la región " + g.get_value_from_regions(action[2] - 1))
         elif tag == "partiesIncl":
-            partiesIncluded = ", ".join(map(lambda x: g.get_parties()[x - 1], action[2]))
+            partiesIncluded = ", ".join(map(lambda x: g.get_value_from_parties(x - 1), action[2]))
             print(str(i) + ") Solo candidatos que sean de el/los partido(s) " + partiesIncluded)
         elif tag == "partiesExcl":
-            partiesExcluded = ", ".join(map(lambda x: g.get_parties()[x - 1], action[2]))
+            partiesExcluded = ", ".join(map(lambda x: g.get_value_from_parties(x - 1), action[2]))
             print(str(i) + ") Solo candidatos que no sean de el/los partido(s) " + partiesExcluded)
         elif tag == "experience":
             print(str(i) + ") Solo candidatos con experiencia política")
         elif tag == "studies":
-            print(str(i) + ") Solo candidatos con estudios superiores o iguales a " + g.get_studies()[action[2] - 1])
+            print(str(i) + ") Solo candidatos con estudios superiores o iguales a " + g.get_value_from_studies(action[2] - 1))
         elif tag == "sentence":
-            print(str(i) + ") Solo candidatos sin sentencias políticas")
+            print(str(i) + ") Solo candidatos sin sentencias policiales")
         elif tag == "ageLower":
             print(str(i) + ") Solo candidatos cuya edad sea mayor o igual a " + str(action[2]))
         elif tag == "ageUpper":

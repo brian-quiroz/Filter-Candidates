@@ -17,10 +17,16 @@ class Globals:
         self.__history = []
     def get_regions(self):
         return self.__regions
+    def get_value_from_regions(self, ind):
+        return self.__regions[ind]
     def get_parties(self):
         return self.__parties
+    def get_value_from_parties(self, ind):
+        return self.__parties[ind]
     def get_studies(self):
         return self.__studies
+    def get_value_from_studies(self, ind):
+        return self.__studies[ind]
     def get_articleData(self):
         return self.__articleData
     def append_to_articleData(self, val):
@@ -34,5 +40,28 @@ class Globals:
         self.__history.append(val)
     def del_from_history(self, ind):
         del self.__history[ind]
+    def get_tag_text(self, action, val):
+        if (action == "regions"):
+            return "Región: " + self.__regions[int(val) - 1]
+        elif (action == "partiesIncl"):
+            return "Incluir: " + ", ".join(map(lambda x: self.__parties[int(x) - 1], val))
+        elif (action == "partiesExcl"):
+            return "Excluir: " + ", ".join(map(lambda x: self.__parties[int(x) - 1], val))
+        elif (action == "experience"):
+            return "Con Exp. Pol."
+        elif (action == "studies"):
+            return "Estudios >= " + self.__studies[int(val) - 1]
+        elif (action == "sentence"):
+            return "Sin Sentencias"
+        elif (action == "ageLower"):
+            return "Menores que " + str(val)
+        elif (action == "ageUpper"):
+            return "Mayores que " + str(val)
+        elif (action == "gender"):
+            return "Género: " + val
+        elif (action == "candidate"):
+            return "Nombre: " + val
+        else:
+            return "Error!"
 
 g = Globals()
