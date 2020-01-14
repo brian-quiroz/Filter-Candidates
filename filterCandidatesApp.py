@@ -8,7 +8,7 @@ app = Flask(__name__)
 
 @app.route('/candidatesData', methods=['GET'])
 def candidatesData():
-    message = run2()
+    message = run2(g.get_page())
     return jsonify(message)
 
 @app.route('/regions', methods=['GET'])
@@ -124,6 +124,32 @@ def delAction():
     print(request.get_json())  # parse as JSON
     val = int(request.get_json()['ind'])
     g.del_from_history(val)
+    return 'OK', 200
+
+@app.route('/amount', methods=['GET'])
+def amount():
+    message = g.get_amount()
+    return jsonify(message)
+
+@app.route('/currentPage', methods=['GET'])
+def currentPage():
+    message = g.get_page()
+    return jsonify(message)
+
+@app.route('/pageChange', methods=['POST'])
+def pageChange():
+    print('Incoming..')
+    print(request.get_json())  # parse as JSON
+    val = int(request.get_json()['val'])
+    g.set_page(g.get_page() + val)
+    return 'OK', 200
+
+@app.route('/goToPageN', methods=['POST'])
+def goToPageN():
+    print('Incoming..')
+    print(request.get_json())  # parse as JSON
+    val = int(request.get_json()['val'])
+    g.set_page(val)
     return 'OK', 200
 
 @app.route('/test')

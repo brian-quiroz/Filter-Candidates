@@ -7,18 +7,17 @@ from bs4 import BeautifulSoup
 from filters import *
 from globals import g
 
-def run2():
+def run2(page):
     g.reset_articleData()
 
-    with open('candidatos.json') as json_file:
-        data = json.load(json_file)
-        json_file.close()
-
-    selected = rerun(data)
+    selected = rerun(g.get_json_data())
+    g.set_amount(len(selected))
+    print("Selected " + str(len(selected)))
 
     people = [x["Candidato"] for x in selected]
-    sample = people[:5]
-    print("Selected " + str(len(selected)))
+    print("Results" + str(0 + 5*(page - 1) + 1) + "through" + str(5 + 5*(page -1)))
+    sample = people[0 + 5*(page - 1):5 + 5*(page - 1)]
+
     for i in range(0, len(sample)):
         scrape(sample[i].lower())
     print("Article data: " + str(len(g.get_articleData())))
@@ -242,11 +241,11 @@ def scrape(person):
     image = "http://peruvotoinformado.com/" + soup.find_all('img')[1].get('src')
 
     newDict = {}
-    newDict["A-nombre"] = person
-    newDict["B-imagen"] = image
+    newDict["A-Nombre"] = person.title()
+    newDict["B-Imagen"] = image
     for j in range(0,len(data)):
         [keyN, valN] = data[j].get_text().split(":",1)
-        newDict[str(chr(67+j)) + '-' + keyN.strip().lower()] = valN.strip().lower()
+        newDict[str(chr(67+j)) + '-' + keyN.strip().lower().title()] = valN.strip().lower().title()
     g.append_to_articleData(newDict)
 
 def main():

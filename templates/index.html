@@ -26,11 +26,22 @@
     processCandidate();
   });
 
+  function clearResultsDisplay() {
+    $('#generate-here').html('<p>Cargando...</p>');
+    $('#generate-filters').html('');
+    $('#generate-amount').html('');
+    $("#generate-currpage").html('');
+    $('#generate-arrows').html('');
+    goToPageN(1);
+  }
+
   const renderCandidatesData = async () => {
 
     const candidatesData = await fetch('/candidatesData')
         .then(res => res.json())
         .catch(error => console.log("ERROR"));
+
+    $('#generate-here').html('');
 
     if (candidatesData.length == 0) {
       $("#generate-here").append($("<p>", {text: "Ningún candidato encontrado!"}));
@@ -62,6 +73,15 @@
 
     $('#generate-filters').html('');
     renderHistory();
+
+    $('#generate-amount').html('');
+    renderAmountResults();
+
+    $("#generate-currpage").html('');
+    renderCurrentPage();
+
+    $('#generate-arrows').html('');
+    renderArrows();
   }
 
   function getNewCol(val) {
@@ -86,8 +106,7 @@
       e.preventDefault();
       postRegion(val);
       console.log("Updating...");
-      $('#generate-filters').html('');
-      $('#generate-here').html('');
+      clearResultsDisplay();
       renderCandidatesData();
     });
     return $newDDI;
@@ -136,8 +155,7 @@
       if (submitId == "#submitPartiesIncl") postParty(url, getPartiesInclQueue());
       if (submitId == "#submitPartiesExcl") postParty(url, getPartiesExclQueue());
       console.log("Updating...");
-      $('#generate-filters').html('');
-      $('#generate-here').html('');
+      clearResultsDisplay();
       renderCandidatesData();
     });
   }
@@ -162,8 +180,7 @@ function renderExperience() {
     e.preventDefault();
     postExperience();
     console.log("Updating...");
-    $('#generate-filters').html('');
-    $('#generate-here').html('');
+    clearResultsDisplay();
     renderCandidatesData();
   });
 }
@@ -198,8 +215,7 @@ function getNewDDIStudyLevel(val) {
     e.preventDefault();
     postStudyLevel(val);
     console.log("Updating...");
-    $('#generate-filters').html('');
-    $('#generate-here').html('');
+    clearResultsDisplay();
     renderCandidatesData();
   });
   return $newDDI;
@@ -224,8 +240,7 @@ function renderSentence() {
     e.preventDefault();
     postSentence();
     console.log("Updating...");
-    $('#generate-filters').html('');
-    $('#generate-here').html('');
+    clearResultsDisplay();
     renderCandidatesData();
   });
 }
@@ -260,8 +275,7 @@ function getNewDDIAge(url, val) {
     e.preventDefault();
     postAge(url, val);
     console.log("Updating...");
-    $('#generate-filters').html('');
-    $('#generate-here').html('');
+    clearResultsDisplay();
     renderCandidatesData();
   });
   return $newDDI;
@@ -294,8 +308,7 @@ function getNewDDIGender(val) {
     e.preventDefault();
     postGender(val);
     console.log("Updating...");
-    $('#generate-filters').html('');
-    $('#generate-here').html('');
+    clearResultsDisplay();
     renderCandidatesData();
   });
   return $newDDI;
@@ -321,8 +334,7 @@ function processCandidate() {
     let candidate = $("#inputCandidate").val()
     postCandidate(candidate);
     console.log("Updating...");
-    $('#generate-filters').html('');
-    $('#generate-here').html('');
+    clearResultsDisplay();
     renderCandidatesData();
   });
 }
@@ -367,8 +379,8 @@ function getNewActionTag(description, ind) {
   $newIcon.click((e) => {
     e.preventDefault();
     postDelAction(ind);
-    $('#generate-filters').html('');
-    renderHistory();
+    clearResultsDisplay();
+    renderCandidatesData();
     console.log(description.slice(0,7));
     if (description.slice(0,7) == "Incluir") clearPartiesInclQueue();
     if (description.slice(0,7) == "Excluir") clearPartiesExclQueue();
@@ -391,12 +403,108 @@ const postDelAction = async (ind) => {
   });
 }
 
+const renderAmountResults = async () => {
+  const amount = await fetch('/amount')
+    .then(res => res.json())
+    .catch(error => console.log("ERROR"));
+
+  let $generateAmount = $("#generate-amount");
+
+  let $titleDiv = $("<div>", {"class": "col-md-2"});
+  let $title = $("<p>", {text: "Cantidad de Resultados: "});
+  $titleDiv.append($title);
+  $generateAmount.append($titleDiv);
+
+  let $amountDiv = $("<div>", {"class": "col-md-10"});
+  let $amount = $("<p>", {text: amount.toString()});
+  $amountDiv.append($amount);
+  $generateAmount.append($amountDiv);
+}
+
+const renderCurrentPage = async () => {
+  const currentPage = await fetch('/currentPage')
+    .then(res => res.json())
+    .catch(error => console.log("ERROR"));
+
+  const amount = await fetch('/amount')
+    .then(res => res.json())
+    .catch(error => console.log("ERROR"));
+
+  let $generateCurrentPage = $("#generate-currpage");
+
+  let $titleDiv = $("<div>", {"class": "col-md-1"});
+  let $title = $("<p>", {text: "Página: "});
+  $titleDiv.append($title);
+  $generateCurrentPage.append($titleDiv);
+
+  let $currentPageDiv = $("<div>", {"class": "col-md-11"});
+  let $currentPage = $("<p>", {text: currentPage.toString() + " de " + (Math.ceil(amount/5)).toString()});
+  $currentPageDiv.append($currentPage);
+  $generateCurrentPage.append($currentPageDiv);
+}
+
+const renderArrows = async () => {
+  const currentPage = await fetch('/currentPage')
+    .then(res => res.json())
+    .catch(error => console.log("ERROR"));
+
+  const amount = await fetch('/amount')
+    .then(res => res.json())
+    .catch(error => console.log("ERROR"));
+
+  let $generateArrows = $("#generate-arrows");
+  if (currentPage > 1) $generateArrows.append(getNewArrow("fa-arrow-left"));
+  if (currentPage < (Math.ceil(amount/5))) $generateArrows.append(getNewArrow("fa-arrow-right"));
+}
+
+function getNewArrow(icon) {
+  let $newCol = $("<div>", {"class": "flexItem"});
+  let $newIcon = $("<i>", {"class": "fa " + icon});
+  let $newLabel = $("<span>", {"class": "badge badge-primary"});
+  $newLabel.append($newIcon);
+  $newCol.append($newLabel);
+  $newIcon.click((e) => {
+    e.preventDefault();
+    (icon == "fa-arrow-left") ? postPageChange(-1) : postPageChange(1);
+    renderCandidatesData();
+    console.log("Updating...");
+  });
+  return $newCol;
+}
+
+const postPageChange = async (val) => {
+  fetch('/pageChange', {
+      method: 'POST',
+      headers: new Headers({'content-type': 'application/json'}),
+      body: JSON.stringify({val})
+  }).then(function (response) { // At this point, Flask has printed our JSON
+      return response.text();
+  }).then(function (text) {
+
+  console.log('POST response: ');
+  console.log(text);
+  });
+}
+
+const goToPageN = async (val) => {
+  fetch('/goToPageN', {
+      method: 'POST',
+      headers: new Headers({'content-type': 'application/json'}),
+      body: JSON.stringify({val})
+  }).then(function (response) { // At this point, Flask has printed our JSON
+      return response.text();
+  }).then(function (text) {
+
+  console.log('POST response: ');
+  console.log(text);
+  });
+}
 
 </script>
 
 <body>
   <div>
-    <h1 class="text-center" id="title">Candidatos Filtrados</h1>
+    <h1 class="text-center" id="title">Filtrar Candidatos Elecciones Congresales 2020</h1>
 
     <div id="containerFilterOptions">
       <div class="flexFilter">
@@ -510,8 +618,25 @@ const postDelAction = async (ind) => {
     </div>
     <br>
 
+    <div class="container-fluid" id="containerAmount">
+      <div class="row" id="generate-amount">
+      </div>
+    </div>
+    <br>
+
     <div class="container-fluid" id="generate-here">
     </div>
+    <br>
+
+    <div class="container-fluid" id="containerCurrpage">
+      <div class="row" id="generate-currpage">
+      </div>
+    </div>
+    <br>
+
+    <div class="flexArrows" id="generate-arrows">
+    </div>
+    <br>
   </div>
 
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>

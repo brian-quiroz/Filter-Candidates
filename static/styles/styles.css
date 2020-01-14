@@ -4,3 +4,9 @@
   flex-wrap: wrap;
   justify-content: space-around;
 }
+
+.flexArrows {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}

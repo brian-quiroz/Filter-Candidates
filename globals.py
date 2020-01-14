@@ -1,5 +1,12 @@
+import json
+import random
+
 class Globals:
     def __init__(self):
+        with open('candidatos.json') as json_file:
+            self.__json_data = json.load(json_file)
+            json_file.close()
+        random.shuffle(self.__json_data)
         self.__regions = ['Amazonas', 'Ancash', 'Apurimac', 'Arequipa',
         'Ayacucho', 'Cajamarca', 'Callao', 'Cusco', 'Huancavelica',
         'Huanuco', 'Ica', 'Junin', 'La Libertad', 'Lambayeque',
@@ -15,6 +22,10 @@ class Globals:
         'Posgrado-Inconcluso', 'Posgrado']
         self.__articleData = []
         self.__history = []
+        self.__amount = 0
+        self.__page = 1
+    def get_json_data(self):
+        return self.__json_data
     def get_regions(self):
         return self.__regions
     def get_value_from_regions(self, ind):
@@ -63,5 +74,13 @@ class Globals:
             return "Nombre: " + val
         else:
             return "Error!"
+    def get_amount(self):
+        return self.__amount
+    def set_amount(self, amount):
+        self.__amount = amount
+    def get_page(self):
+        return self.__page
+    def set_page(self, page):
+        self.__page = page
 
 g = Globals()
