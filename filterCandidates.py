@@ -245,7 +245,8 @@ def scrape(person):
     newDict["B-Imagen"] = image
     for j in range(0,len(data)):
         [keyN, valN] = data[j].get_text().split(":",1)
-        newDict[str(chr(67+j)) + '-' + keyN.strip().lower().title()] = valN.strip().lower().title()
+        if (keyN.strip() != "GÉNERO"):
+            newDict[str(chr(67+j)) + '-' + keyN.strip().lower().title()] = valN.strip().lower().title()
     g.append_to_articleData(newDict)
 
 def main():
