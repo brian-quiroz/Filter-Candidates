@@ -4,6 +4,7 @@
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
   <script type="text/javascript"
         src="{{ url_for('static', filename='renderData.js') }}"></script>
+        <!-- Development version: -->
 </head>
 
 <body>
@@ -92,14 +93,14 @@
         <div class="flexItem">
           <div class="form-check" id="fcExperience">
             <input type="checkbox" class="form-check-input" id="cbExperience">
-            <label class="form-check-label" id="cblblExperience" for="exampleCheck1">Experiencia Política</label>
+            <label class="form-check-label" id="cblblExperience" for="cbExperience">Experiencia Política</label>
           </div>
         </div>
 
         <div class="flexItem">
           <div class="form-check" id="fcSentence">
             <input type="checkbox" class="form-check-input" id="cbSentence">
-            <label class="form-check-label" id="cblblSentence" for="exampleCheck1">Sin Sentencias</label>
+            <label class="form-check-label" id="cblblSentence" for="cbSentence">Sin Sentencias</label>
           </div>
         </div>
 
@@ -113,6 +114,11 @@
         </div>
 
       </div>
+
+      <div class="flexUpdate">
+        <button type="submit" class="btn btn-primary" id="submitUpdate">Actualizar</button>
+      </div>
+      <br>
     </div>
     <br>
 
@@ -139,6 +145,14 @@
     <br>
 
     <div class="flexArrows" id="generate-arrows">
+    </div>
+    <br>
+
+    <div class="flexSave" id="saveButtonContainer">
+    </div>
+    <br>
+
+    <div class="container-fluid" id="generate-saved">
     </div>
     <br>
   </div>

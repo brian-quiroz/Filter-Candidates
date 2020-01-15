@@ -229,7 +229,8 @@ def printData():
     print('\n')
 
 def scrape(person):
-    r = requests.get('http://peruvotoinformado.com/2020/' + person.replace(' ', '-'))
+    link = 'http://peruvotoinformado.com/2020/' + person.replace(' ', '-')
+    r = requests.get(link)
     coverpage = r.content
     soup = BeautifulSoup(coverpage, 'html5lib')
 
@@ -243,6 +244,7 @@ def scrape(person):
     newDict = {}
     newDict["A-Nombre"] = person.title()
     newDict["B-Imagen"] = image
+    newDict["H-Link"] = link
     for j in range(0,len(data)):
         [keyN, valN] = data[j].get_text().split(":",1)
         if (keyN.strip() != "GÉNERO"):

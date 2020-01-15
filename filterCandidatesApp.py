@@ -138,10 +138,11 @@ def currentPage():
 
 @app.route('/pageChange', methods=['POST'])
 def pageChange():
-    print('Incoming..')
+    print('Incoming!!..')
     print(request.get_json())  # parse as JSON
     val = int(request.get_json()['val'])
     g.set_page(g.get_page() + val)
+    print("New page: " + str(g.get_page()))
     return 'OK', 200
 
 @app.route('/goToPageN', methods=['POST'])
@@ -150,6 +151,33 @@ def goToPageN():
     print(request.get_json())  # parse as JSON
     val = int(request.get_json()['val'])
     g.set_page(val)
+    return 'OK', 200
+
+@app.route('/saveCandidates', methods=['POST'])
+def saveCandidates():
+    print('Incoming..')
+    print(request.get_json())  # parse as JSON
+    inds = request.get_json()['inds']
+    vals = list(map(lambda ind: g.get_articleData()[ind], inds))
+    for val in vals:
+        g.append_to_saved(val)
+    print(len(g.get_saved()))
+    return 'OK', 200
+
+@app.route('/saved', methods=['GET'])
+def saved():
+    message = g.get_saved()
+    return jsonify(message)
+
+@app.route('/delCandidate', methods=['POST'])
+def delCandidate():
+    print('Incoming..')
+    print(request.get_json())  # parse as JSON
+    ind = int(request.get_json()['ind'])
+    val = g.get_saved()[ind]
+    print("Deleting " + val["A-Nombre"])
+    g.del_from_saved(ind)
+    print(len(g.get_saved()))
     return 'OK', 200
 
 @app.route('/test')

@@ -24,6 +24,7 @@ class Globals:
         self.__history = []
         self.__amount = 0
         self.__page = 1
+        self.__saved = []
     def get_json_data(self):
         return self.__json_data
     def get_regions(self):
@@ -82,5 +83,11 @@ class Globals:
         return self.__page
     def set_page(self, page):
         self.__page = page
+    def get_saved(self):
+        return self.__saved
+    def append_to_saved(self, val):
+        self.__saved.append(val)
+    def del_from_saved(self, ind):
+        del self.__saved[ind]
 
 g = Globals()

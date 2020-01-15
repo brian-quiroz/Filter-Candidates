@@ -5,7 +5,7 @@
   justify-content: space-around;
 }
 
-.flexArrows {
+.flexArrows, .flexUpdate, .flexSave {
   display: flex;
   flex-direction: row;
   justify-content: center;
