@@ -36,12 +36,32 @@ $(document).ready(function() {
   renderUpdate();
 });
 
+const getRequest = async (url) => {
+  const val = await fetch(url)
+      .then(res => res.json())
+      .catch(error => console.log("ERROR"));
+  return val;
+}
+
+const postRequest = async (url, val) => {
+  fetch(url, {
+      method: 'POST',
+      headers: new Headers({'content-type': 'application/json'}),
+      body: JSON.stringify({val})
+  }).then(function (response) { // At this point, Flask has printed our JSON
+      return response.text();
+  }).then(function (text) {
+  console.log('POST response: ');
+  console.log(text);
+  });
+}
+
 function clearResultsDisplay(shouldGoToFirstPage) {
   $('#generate-here').html('<p>Cargando...</p>');
   $("#generate-currpage").html('');
   $('#generate-arrows').html('');
   $('#generate-amount').html('');
-  if (shouldGoToFirstPage) goToPageN(1);
+  if (shouldGoToFirstPage) postRequest('/goToPageN', 1);
 }
 
 function reloadFilters() {
@@ -54,10 +74,7 @@ function clearSavedDisplay() {
 }
 
 const renderCandidatesData = async () => {
-
-  const candidatesData = await fetch('/candidatesData')
-      .then(res => res.json())
-      .catch(error => console.log("ERROR"));
+  const candidatesData = await getRequest('/candidatesData');
 
   $('#generate-here').html('');
 
@@ -137,10 +154,7 @@ const renderCheckbox = (ind) => {
 }
 
 const renderRegions = async () => {
-  const regions = await fetch('/regions')
-    .then(res => res.json())
-    .catch(error => console.log("ERROR"));
-
+  const regions = await getRequest('/regions');
   let $ddMRegions = $("#ddMRegions");
   regions.forEach(region => $ddMRegions.append(getNewDDIRegion(region)));
 }
@@ -149,30 +163,14 @@ function getNewDDIRegion(val) {
   let $newDDI = $("<a>", {"class": "dropdown-item", href: "#", text: val});
   $newDDI.click((e) => {
     e.preventDefault();
-    postRegion(val);
+    postRequest('/updateRegions', val);
     reloadFilters();
   });
   return $newDDI;
 }
 
-const postRegion = async (val) => {
-  fetch('/updateRegions', {
-      method: 'POST',
-      headers: new Headers({'content-type': 'application/json'}),
-      body: JSON.stringify({val})
-  }).then(function (response) { // At this point, Flask has printed our JSON
-      return response.text();
-  }).then(function (text) {
-
-  console.log('POST response: ');
-  console.log(text);
-  });
-}
-
 const renderParties = async () => {
-  const parties = await fetch('/parties')
-    .then(res => res.json())
-    .catch(error => console.log("ERROR"));
+  const parties = await getRequest('/parties');
   let $ddMPartiesIncl = $("#ddMPartiesIncl");
   let $ddMPartiesEcxl = $("#ddMPartiesExcl");
   parties.forEach(party => $ddMPartiesIncl.append(getNewDDIParty("incl", party)));
@@ -195,33 +193,18 @@ function getNewDDIParty(type, val) {
 function submitPartiesOnClick(submitId, url) {
   $(submitId).click((e) => {
     e.preventDefault();
-    if (submitId == "#submitPartiesIncl") postParty(url, getPartiesInclQueue());
-    if (submitId == "#submitPartiesExcl") postParty(url, getPartiesExclQueue());
+    if (submitId == "#submitPartiesIncl") postRequest(url, getPartiesInclQueue());
+    if (submitId == "#submitPartiesExcl") postRequest(url, getPartiesExclQueue());
     reloadFilters();
   });
 }
-
-const postParty = async (url, val) => {
-  fetch(url, {
-      method: 'POST',
-      headers: new Headers({'content-type': 'application/json'}),
-      body: JSON.stringify({val})
-  }).then(function (response) { // At this point, Flask has printed our JSON
-      return response.text();
-  }).then(function (text) {
-
-  console.log('POST response: ');
-  console.log(text);
-  });
-}
-
 
 function renderExperience() {
   $("#cbExperience").click(function() {
     let check = ($(this).prop('checked'));
     console.log(check);
     if (check) {
-      postExperience();
+      postRequest('/updateExperience', "");
       reloadFilters();
     } else {
       console.log("NOPE");
@@ -229,26 +212,8 @@ function renderExperience() {
   });
 }
 
-const postExperience = async () => {
-  let val = "";
-  fetch('/updateExperience', {
-      method: 'POST',
-      headers: new Headers({'content-type': 'application/json'}),
-      body: JSON.stringify({val})
-  }).then(function (response) { // At this point, Flask has printed our JSON
-      return response.text();
-  }).then(function (text) {
-
-  console.log('POST response: ');
-  console.log(text);
-  });
-}
-
 const renderStudies = async () => {
-  const studies = await fetch('/studies')
-    .then(res => res.json())
-    .catch(error => console.log("ERROR"));
-
+  const studies = await getRequest('/studies');
   let $ddMStudies = $("#ddMStudies");
   studies.forEach(studyLevel => $ddMStudies.append(getNewDDIStudyLevel(studyLevel)));
 }
@@ -257,24 +222,10 @@ function getNewDDIStudyLevel(val) {
   let $newDDI = $("<a>", {"class": "dropdown-item", href: "#", text: val});
   $newDDI.click((e) => {
     e.preventDefault();
-    postStudyLevel(val);
+    postRequest('/updateStudies', val);
     reloadFilters();
   });
   return $newDDI;
-}
-
-const postStudyLevel = async (val) => {
-  fetch('/updateStudies', {
-      method: 'POST',
-      headers: new Headers({'content-type': 'application/json'}),
-      body: JSON.stringify({val})
-  }).then(function (response) { // At this point, Flask has printed our JSON
-      return response.text();
-  }).then(function (text) {
-
-  console.log('POST response: ');
-  console.log(text);
-  });
 }
 
 function renderSentence() {
@@ -282,26 +233,11 @@ function renderSentence() {
     let check = ($(this).prop('checked'));
     console.log(check);
     if (check) {
-      postSentence();
+      postRequest('/updateSentence', "");
       reloadFilters();
     } else {
       console.log("NOPE");
     }
-  });
-}
-
-const postSentence = async () => {
-  let val = "";
-  fetch('/updateSentence', {
-      method: 'POST',
-      headers: new Headers({'content-type': 'application/json'}),
-      body: JSON.stringify({val})
-  }).then(function (response) { // At this point, Flask has printed our JSON
-      return response.text();
-  }).then(function (text) {
-
-  console.log('POST response: ');
-  console.log(text);
   });
 }
 
@@ -318,24 +254,10 @@ function getNewDDIAge(url, val) {
   let $newDDI = $("<a>", {"class": "dropdown-item", href: "#", text: val});
   $newDDI.click((e) => {
     e.preventDefault();
-    postAge(url, val);
+    postRequest(url, val);
     reloadFilters();
   });
   return $newDDI;
-}
-
-const postAge = async (url, val) => {
-  fetch(url, {
-      method: 'POST',
-      headers: new Headers({'content-type': 'application/json'}),
-      body: JSON.stringify({val})
-  }).then(function (response) { // At this point, Flask has printed our JSON
-      return response.text();
-  }).then(function (text) {
-
-  console.log('POST response: ');
-  console.log(text);
-  });
 }
 
 const renderGenders = async () => {
@@ -349,46 +271,18 @@ function getNewDDIGender(val) {
   let $newDDI = $("<a>", {"class": "dropdown-item", href: "#", text: val});
   $newDDI.click((e) => {
     e.preventDefault();
-    postGender(val);
+    postRequest('/updateGender', val);
     reloadFilters();
   });
   return $newDDI;
-}
-
-const postGender = async (val) => {
-  fetch('/updateGender', {
-      method: 'POST',
-      headers: new Headers({'content-type': 'application/json'}),
-      body: JSON.stringify({val})
-  }).then(function (response) { // At this point, Flask has printed our JSON
-      return response.text();
-  }).then(function (text) {
-
-  console.log('POST response: ');
-  console.log(text);
-  });
 }
 
 function processCandidate() {
   $("#formCandidate").submit((e) => {
     e.preventDefault();
     let candidate = $("#inputCandidate").val()
-    postCandidate(candidate);
+    postRequest('/updateCandidate', candidate);
     reloadFilters();
-  });
-}
-
-const postCandidate = async (val) => {
-  fetch('/updateCandidate', {
-      method: 'POST',
-      headers: new Headers({'content-type': 'application/json'}),
-      body: JSON.stringify({val})
-  }).then(function (response) { // At this point, Flask has printed our JSON
-      return response.text();
-  }).then(function (text) {
-
-  console.log('POST response: ');
-  console.log(text);
   });
 }
 
@@ -401,9 +295,7 @@ const renderUpdate = () => {
 }
 
 const renderHistory = async () => {
-  const history = await fetch('/history')
-    .then(res => res.json())
-    .catch(error => console.log("ERROR"));
+  const history = await getRequest('/history');
 
   let $generateFilters = $("#generate-filters");
 
@@ -425,7 +317,7 @@ function getNewActionTag(description, ind) {
   $newCol.append($newLabel);
   $newIcon.click((e) => {
     e.preventDefault();
-    postDelAction(ind);
+    postRequest('/delAction', ind);
     reloadFilters();
     console.log(description.slice(0,7));
     if (description.slice(0,7) == "Incluir") clearPartiesInclQueue();
@@ -435,24 +327,8 @@ function getNewActionTag(description, ind) {
   return $newCol;
 }
 
-const postDelAction = async (ind) => {
-  fetch('/delAction', {
-      method: 'POST',
-      headers: new Headers({'content-type': 'application/json'}),
-      body: JSON.stringify({ind})
-  }).then(function (response) { // At this point, Flask has printed our JSON
-      return response.text();
-  }).then(function (text) {
-
-  console.log('POST response: ');
-  console.log(text);
-  });
-}
-
 const renderAmountResults = async () => {
-  const amount = await fetch('/amount')
-    .then(res => res.json())
-    .catch(error => console.log("ERROR"));
+  const amount = await getRequest('/amount');
 
   let $generateAmount = $("#generate-amount");
 
@@ -468,13 +344,8 @@ const renderAmountResults = async () => {
 }
 
 const renderCurrentPage = async () => {
-  const currentPage = await fetch('/currentPage')
-    .then(res => res.json())
-    .catch(error => console.log("ERROR"));
-
-  const amount = await fetch('/amount')
-    .then(res => res.json())
-    .catch(error => console.log("ERROR"));
+  const currentPage = await getRequest('/currentPage');
+  const amount = await getRequest('/amount');
 
   let $generateCurrentPage = $("#generate-currpage");
 
@@ -490,13 +361,8 @@ const renderCurrentPage = async () => {
 }
 
 const renderArrows = async () => {
-  const currentPage = await fetch('/currentPage')
-    .then(res => res.json())
-    .catch(error => console.log("ERROR"));
-
-  const amount = await fetch('/amount')
-    .then(res => res.json())
-    .catch(error => console.log("ERROR"));
+  const currentPage = await getRequest('/currentPage');
+  const amount = await getRequest('/amount');
 
   let $generateArrows = $("#generate-arrows");
   if (currentPage > 1) $generateArrows.append(getNewArrow("fa-arrow-left"));
@@ -511,7 +377,7 @@ function getNewArrow(icon) {
   $newCol.append($newLabel);
   $newIcon.click((e) => {
     e.preventDefault();
-    (icon == "fa-arrow-left") ? postPageChange(-1) : postPageChange(1);
+    (icon == "fa-arrow-left") ? postRequest('/pageChange', -1) : postRequest('/pageChange', 1);
     clearResultsDisplay(false);
     renderCandidatesData();
     clearSaved();
@@ -520,41 +386,13 @@ function getNewArrow(icon) {
   return $newCol;
 }
 
-const postPageChange = async (val) => {
-  fetch('/pageChange', {
-      method: 'POST',
-      headers: new Headers({'content-type': 'application/json'}),
-      body: JSON.stringify({val})
-  }).then(function (response) { // At this point, Flask has printed our JSON
-      return response.text();
-  }).then(function (text) {
-
-  console.log('POST response: ');
-  console.log(text);
-  });
-}
-
-const goToPageN = async (val) => {
-  fetch('/goToPageN', {
-      method: 'POST',
-      headers: new Headers({'content-type': 'application/json'}),
-      body: JSON.stringify({val})
-  }).then(function (response) { // At this point, Flask has printed our JSON
-      return response.text();
-  }).then(function (text) {
-
-  console.log('POST response: ');
-  console.log(text);
-  });
-}
-
 const renderSave = () => {
   let $container = $("#saveButtonContainer");
   let $button = $("<button>", {type: "submit", "class": "btn btn-primary", id: "submitSave", text: "Guardar"});
   $container.append($button);
   $($button).click(function(e) {
     e.preventDefault();
-    postSaveCandidates(getSaved());
+    postRequest('/saveCandidates', getSaved());
     clearSavedDisplay();
     renderSaved();
     clearCheckboxes();
@@ -569,25 +407,8 @@ function clearCheckboxes() {
   });
 }
 
-const postSaveCandidates = async (inds) => {
-  fetch('/saveCandidates', {
-      method: 'POST',
-      headers: new Headers({'content-type': 'application/json'}),
-      body: JSON.stringify({inds})
-  }).then(function (response) { // At this point, Flask has printed our JSON
-      return response.text();
-  }).then(function (text) {
-
-  console.log('POST response: ');
-  console.log(text);
-  });
-}
-
 const renderSaved = async () => {
-
-  const savedCandidates = await fetch('/saved')
-      .then(res => res.json())
-      .catch(error => console.log("ERROR"));
+  const savedCandidates = await getRequest('/saved');
 
   $('#generate-saved').html('');
 
@@ -597,7 +418,9 @@ const renderSaved = async () => {
   }
 
   let $titleWrapper = $("<div>");
+  let $title = $("<h4>", {text: "Favoritos:"});
   let $titles = $("<div>", {"class": "row"});
+  $titleWrapper.append($title);
   Object.keys(savedCandidates[0]).filter(key => key != "H-Link").forEach(key => $titles.append(getNewCol(key.substring(2))));
   $titleWrapper.append($titles);
   let $titleHrTag = $("<hr>");
@@ -634,25 +457,11 @@ const renderDelButton = (ind) => {
   let $span = $("<span>");
   let $icon = $("<i>", {"class": "fa fa-window-close"});
   $icon.click((e) => {
-    postDelCandidate(ind);
+    postRequest('/delCandidate', ind);
     clearSavedDisplay();
     renderSaved();
   });
   $span.append($icon);
   $container.append($span);
   return $container;
-}
-
-const postDelCandidate = async (ind) => {
-  fetch('/delCandidate', {
-      method: 'POST',
-      headers: new Headers({'content-type': 'application/json'}),
-      body: JSON.stringify({ind})
-  }).then(function (response) { // At this point, Flask has printed our JSON
-      return response.text();
-  }).then(function (text) {
-
-  console.log('POST response: ');
-  console.log(text);
-  });
 }

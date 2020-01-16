@@ -3,10 +3,13 @@ import random
 
 class Globals:
     def __init__(self):
-        with open('candidatos.json') as json_file:
+        with open('originalCandidates.json') as json_file:
             self.__json_data = json.load(json_file)
             json_file.close()
         random.shuffle(self.__json_data)
+        with open('scrapedCandidates.json') as json_file:
+            self.__scraped_data = json.load(json_file)
+            json_file.close()
         self.__regions = ['Amazonas', 'Ancash', 'Apurimac', 'Arequipa',
         'Ayacucho', 'Cajamarca', 'Callao', 'Cusco', 'Huancavelica',
         'Huanuco', 'Ica', 'Junin', 'La Libertad', 'Lambayeque',
@@ -18,7 +21,7 @@ class Globals:
         'Frente Amplio', 'Todos por el Peru', 'Contigo', 'PPC', 'Renacimiento Unido',
         'Peru Nacion', 'Juntos por el Peru', 'Apra', 'Avanza Pais', 'Vamos Peru',
         'Somos Peru', 'Partido Morado', 'Accion Popular', 'Solidaridad Nacional']
-        self.__studies = ['Uni-Concluido', 'Egresado', 'Bachiller', 'Titulado',
+        self.__studies = ['Secundaria', 'Uni-Concluido', 'Tecnico', 'Egresado', 'Bachiller', 'Titulado',
         'Posgrado-Inconcluso', 'Posgrado']
         self.__articleData = []
         self.__history = []
@@ -27,6 +30,8 @@ class Globals:
         self.__saved = []
     def get_json_data(self):
         return self.__json_data
+    def get_scraped_data(self):
+        return self.__scraped_data
     def get_regions(self):
         return self.__regions
     def get_value_from_regions(self, ind):
@@ -41,6 +46,8 @@ class Globals:
         return self.__studies[ind]
     def get_articleData(self):
         return self.__articleData
+    def get_length_of_articleData(self):
+        return len(self.__articleData)
     def append_to_articleData(self, val):
         self.__articleData.append(val)
     def reset_articleData(self):

@@ -1,14 +1,14 @@
 import sys
 import json
 from filters import *
-from filterCandidates import run2
+from filterCandidates import filterData
 from globals import g
 from flask import Flask, jsonify, request, render_template
 app = Flask(__name__)
 
 @app.route('/candidatesData', methods=['GET'])
 def candidatesData():
-    message = run2(g.get_page())
+    message = filterData(g.get_page())
     return jsonify(message)
 
 @app.route('/regions', methods=['GET'])
@@ -122,8 +122,8 @@ def history():
 def delAction():
     print('Incoming..')
     print(request.get_json())  # parse as JSON
-    val = int(request.get_json()['ind'])
-    g.del_from_history(val)
+    ind = int(request.get_json()['val'])
+    g.del_from_history(ind)
     return 'OK', 200
 
 @app.route('/amount', methods=['GET'])
@@ -157,7 +157,7 @@ def goToPageN():
 def saveCandidates():
     print('Incoming..')
     print(request.get_json())  # parse as JSON
-    inds = request.get_json()['inds']
+    inds = request.get_json()['val']
     vals = list(map(lambda ind: g.get_articleData()[ind], inds))
     for val in vals:
         g.append_to_saved(val)
@@ -173,7 +173,7 @@ def saved():
 def delCandidate():
     print('Incoming..')
     print(request.get_json())  # parse as JSON
-    ind = int(request.get_json()['ind'])
+    ind = int(request.get_json()['val'])
     val = g.get_saved()[ind]
     print("Deleting " + val["A-Nombre"])
     g.del_from_saved(ind)
