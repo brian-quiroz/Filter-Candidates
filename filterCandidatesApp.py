@@ -11,6 +11,11 @@ def candidatesData():
     message = filterData(g.get_page())
     return jsonify(message)
 
+@app.route('/numPerPage', methods=['GET'])
+def numPerPage():
+    message = g.get_NUM_PER_PAGE()
+    return jsonify(message)
+
 @app.route('/regions', methods=['GET'])
 def regions():
     message = g.get_regions()
@@ -51,8 +56,8 @@ def updatePartiesExcl():
 def updateExperience():
     print('Incoming..')
     print(request.get_json())  # parse as JSON
-    val = request.get_json()
-    g.append_to_history(["experience", lambda selected: filterExperience(selected), val])
+    val = str(request.get_json()['val'])
+    g.append_to_history(["experience", lambda selected, expPol: filterExperience(selected, expPol), val])
     return 'OK', 200
 
 @app.route('/studies', methods=['GET'])
@@ -68,12 +73,13 @@ def updateStudies():
     g.append_to_history(["studies", lambda selected, level: filterStudies(selected, level), val])
     return 'OK', 200
 
+
 @app.route('/updateSentence', methods=['POST'])
 def updateSentence():
     print('Incoming..')
     print(request.get_json())  # parse as JSON
-    val = request.get_json()
-    g.append_to_history(["sentence", lambda selected: filterSentence(selected), val])
+    val = request.get_json()['val']
+    g.append_to_history(["sentence", lambda selected, sent: filterSentence(selected, sent), val])
     return 'OK', 200
 
 @app.route('/updateAgeLower', methods=['POST'])
@@ -178,6 +184,19 @@ def delCandidate():
     print("Deleting " + val["A-Nombre"])
     g.del_from_saved(ind)
     print(len(g.get_saved()))
+    return 'OK', 200
+
+@app.route('/sortCandidates', methods=['POST'])
+def sortCandidates():
+    print('Incoming..')
+    print(request.get_json())  # parse as JSON
+    val = request.get_json()['val']
+    if (val == "Nombre"):
+        g.append_to_ordering_history([val, lambda selected: sortByName(selected)])
+    elif (val == "Ingreso Anual"):
+        print("Not Yet")
+    else:
+        print("Nope")
     return 'OK', 200
 
 @app.route('/test')

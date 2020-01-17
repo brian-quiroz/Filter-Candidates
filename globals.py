@@ -25,9 +25,11 @@ class Globals:
         'Posgrado-Inconcluso', 'Posgrado']
         self.__articleData = []
         self.__history = []
+        self.__ordering_history = []
         self.__amount = 0
         self.__page = 1
         self.__saved = []
+        self.__NUM_PER_PAGE = 10
     def get_json_data(self):
         return self.__json_data
     def get_scraped_data(self):
@@ -59,6 +61,13 @@ class Globals:
         self.__history.append(val)
     def del_from_history(self, ind):
         del self.__history[ind]
+    def get_ordering_history(self):
+        return self.__ordering_history
+    def append_to_ordering_history(self, val):
+        self.__ordering_history = [x for x in self.__ordering_history if x[0] != val[0]]
+        self.__ordering_history.append(val)
+    def del_from_ordering_history(self, ind):
+        del self.__ordering_history[ind]
     def get_tag_text(self, action, val):
         if (action == "regions"):
             return "Región: " + self.__regions[int(val) - 1]
@@ -67,11 +76,11 @@ class Globals:
         elif (action == "partiesExcl"):
             return "Excluir: " + ", ".join(map(lambda x: self.__parties[int(x) - 1], val))
         elif (action == "experience"):
-            return "Con Exp. Pol."
+            return ("Con" if (val == "Sí") else "Sin") + " Exp. Pol."
         elif (action == "studies"):
             return "Estudios >= " + self.__studies[int(val) - 1]
         elif (action == "sentence"):
-            return "Sin Sentencias"
+            return val
         elif (action == "ageLower"):
             return "Menores que " + str(val)
         elif (action == "ageUpper"):
@@ -96,5 +105,7 @@ class Globals:
         self.__saved.append(val)
     def del_from_saved(self, ind):
         del self.__saved[ind]
+    def get_NUM_PER_PAGE(self):
+        return self.__NUM_PER_PAGE
 
 g = Globals()

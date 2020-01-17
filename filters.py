@@ -9,14 +9,14 @@ def filterPartiesIncl (filt, inds):
 def filterPartiesExcl (filt, inds):
     return [x for x in filt if all(map(lambda ind: x["Partido"] != g.get_parties()[ind - 1].upper(), inds))]
 
-def filterExperience(selected):
-    return [x for x in selected if x["Experiencia_Pol"] == "Sí"]
+def filterExperience(selected, expPol):
+    return [x for x in selected if x["Experiencia_Pol"] == expPol]
 
 def filterStudies(selected, level):
     return [x for x in selected if "Estudios" in x and g.get_studies().index(x["Estudios"]) >= level - 1]
 
-def filterSentence(selected):
-    return [x for x in selected if x["ConSentencia"] == "Sin Sentencia"]
+def filterSentence(selected, sent):
+    return [x for x in selected if x["ConSentencia"] == sent]
 
 def filterAgeLower(selected, lower):
     return [x for x in selected if int(x["Edad"]) >= lower]
@@ -29,3 +29,9 @@ def filterGender(selected, gender):
 
 def filterCandidate(selected, name):
     return [x for x in selected if x["Candidato"] == name.upper()]
+
+def sortByName(selected):
+    return sorted(selected, key=lambda x: x["Candidato"])
+
+# def sortByIncome(selected):
+#     return sorted(selected, key=lambda x: x["Ingreso A"])

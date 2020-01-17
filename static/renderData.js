@@ -1,3 +1,6 @@
+let numPerPage = 0
+let setNumPerPage = (val) => numPerPage = val;
+let getNumPerPage = () => numPerPage;
 let saved = [];
 let partiesInclQueue = [];
 let partiesExclQueue = [];
@@ -25,6 +28,7 @@ let removeFromSaved = (val) => {
 }
 
 $(document).ready(function() {
+  fetchNumPerPage();
   renderRegions();
   renderParties();
   renderExperience();
@@ -56,6 +60,11 @@ const postRequest = async (url, val) => {
   });
 }
 
+const fetchNumPerPage = async () => {
+  const num = await getRequest('/numPerPage');
+  setNumPerPage(parseInt(num));
+}
+
 function clearResultsDisplay(shouldGoToFirstPage) {
   $('#generate-here').html('<p>Cargando...</p>');
   $("#generate-currpage").html('');
@@ -83,13 +92,15 @@ const renderCandidatesData = async () => {
     return;
   }
 
-  let $titleWrapper = $("<div>");
+  let $titleWrapper = $("<div>", {id: "results-titles"});
   let $titles = $("<div>", {"class": "row"});
   Object.keys(candidatesData[0]).filter(key => key != "H-Link").forEach(key => $titles.append(getNewCol(key.substring(2))));
   $titleWrapper.append($titles);
   let $titleHrTag = $("<hr>");
   $titleWrapper.append($titleHrTag);
   $("#generate-here").append($titleWrapper);
+
+  makeTitlesBold("#results-titles");
 
   for (let i = 0; i < candidatesData.length; i++) {
     let dict = candidatesData[i]
@@ -133,6 +144,25 @@ function getNewCol(val) {
   let $newTag = (val.substring(0,4) == "http") ? $("<img>", {src: val, height: 50, width: 50}) : $("<p>", {text: val});
   $newCol.append($newTag);
   return $newCol;
+}
+
+function makeTitlesBold(titlesId) {
+  $(titlesId).find(".col-md-1").each(function() {
+    console.log("Making titles bold");
+    let $title = $(this).children();
+    let $oldPText = $title.text();
+    let $newIcon = $("<i>", {"class": "fa fa-filter"});
+    let $newStrong = $("<strong>", {text: $oldPText + " "});
+    $newStrong.append($newIcon);
+    $title.replaceWith($newStrong);
+    $newIcon.click((e) => {
+      e.preventDefault();
+      postRequest('/sortCandidates', $oldPText.trim());
+      console.log("Updating...");
+      clearResultsDisplay(false);
+      renderCandidatesData();
+    });
+  });
 }
 
 const renderCheckbox = (ind) => {
@@ -199,19 +229,6 @@ function submitPartiesOnClick(submitId, url) {
   });
 }
 
-function renderExperience() {
-  $("#cbExperience").click(function() {
-    let check = ($(this).prop('checked'));
-    console.log(check);
-    if (check) {
-      postRequest('/updateExperience', "");
-      reloadFilters();
-    } else {
-      console.log("NOPE");
-    }
-  });
-}
-
 const renderStudies = async () => {
   const studies = await getRequest('/studies');
   let $ddMStudies = $("#ddMStudies");
@@ -228,17 +245,37 @@ function getNewDDIStudyLevel(val) {
   return $newDDI;
 }
 
-function renderSentence() {
-  $("#cbSentence").click(function() {
-    let check = ($(this).prop('checked'));
-    console.log(check);
-    if (check) {
-      postRequest('/updateSentence', "");
-      reloadFilters();
-    } else {
-      console.log("NOPE");
-    }
+const renderExperience = () => {
+  const expPol = ['Sí', 'No']
+
+  let $ddMExperience = $("#ddMExperience");
+  expPol.forEach(exp => $ddMExperience.append(getNewDDIExperience(exp)));
+}
+
+function getNewDDIExperience(val) {
+  let $newDDI = $("<a>", {"class": "dropdown-item", href: "#", text: val});
+  $newDDI.click((e) => {
+    e.preventDefault();
+    postRequest('/updateExperience', val);
+    reloadFilters();
   });
+  return $newDDI;
+}
+
+const renderSentence = () => {
+  const sent = ['Sin Sentencia', 'Con Sentencia'];
+  let  $ddMSentence = $("#ddMSentence");
+  sent.forEach(sent => $ddMSentence.append(getNewDDISentence(sent)));
+}
+
+function getNewDDISentence(val) {
+  let $newDDI = $("<a>", {"class": "dropdown-item", href: "#", text: val});
+  $newDDI.click((e) => {
+    e.preventDefault();
+    postRequest('/updateSentence', val);
+    reloadFilters();
+  });
+  return $newDDI;
 }
 
 const renderAges = async () => {
@@ -260,7 +297,7 @@ function getNewDDIAge(url, val) {
   return $newDDI;
 }
 
-const renderGenders = async () => {
+const renderGenders = () => {
   const genders = ['Hombre', 'Mujer']
 
   let $ddMGenders = $("#ddMGenders");
@@ -355,7 +392,7 @@ const renderCurrentPage = async () => {
   $generateCurrentPage.append($titleDiv);
 
   let $currentPageDiv = $("<div>", {"class": "col-md-11"});
-  let $currentPage = $("<p>", {text: currentPage.toString() + " de " + (Math.ceil(amount/5)).toString()});
+  let $currentPage = $("<p>", {text: currentPage.toString() + " de " + (Math.ceil(amount/getNumPerPage())).toString()});
   $currentPageDiv.append($currentPage);
   $generateCurrentPage.append($currentPageDiv);
 }
@@ -366,7 +403,7 @@ const renderArrows = async () => {
 
   let $generateArrows = $("#generate-arrows");
   if (currentPage > 1) $generateArrows.append(getNewArrow("fa-arrow-left"));
-  if (currentPage < (Math.ceil(amount/5))) $generateArrows.append(getNewArrow("fa-arrow-right"));
+  if (currentPage < (Math.ceil(amount/getNumPerPage()))) $generateArrows.append(getNewArrow("fa-arrow-right"));
 }
 
 function getNewArrow(icon) {
@@ -402,7 +439,7 @@ const renderSave = () => {
 function clearCheckboxes() {
   $("#generate-here").children(".candidate").each(function() {
     console.log("Clearing checkboxes")
-    let $candidate = $(this).find(".row").find(".form-check").find(".form-check-label").find(".form-check-input");
+    let $candidate = $(this).find(".form-check-input");
     $candidate.prop('checked', false);
   });
 }
@@ -417,7 +454,7 @@ const renderSaved = async () => {
     return;
   }
 
-  let $titleWrapper = $("<div>");
+  let $titleWrapper = $("<div>",  {id: "saved-titles"});
   let $title = $("<h4>", {text: "Favoritos:"});
   let $titles = $("<div>", {"class": "row"});
   $titleWrapper.append($title);
@@ -426,6 +463,8 @@ const renderSaved = async () => {
   let $titleHrTag = $("<hr>");
   $titleWrapper.append($titleHrTag);
   $("#generate-saved").append($titleWrapper);
+
+  makeTitlesBold("#saved-titles");
 
   for (let i = 0; i < savedCandidates.length; i++) {
     let dict = savedCandidates[i]

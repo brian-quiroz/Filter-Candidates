@@ -3,10 +3,10 @@ from filters import *
 from globals import g
 
 def filterData(page):
-    NUM_PER_PAGE = 10
+    NUM_PER_PAGE = g.get_NUM_PER_PAGE()
     g.reset_articleData()
 
-    selected = rerun(g.get_json_data())
+    selected = runFiltersAndSort(g.get_json_data())
     g.set_amount(len(selected))
     print("Selected " + str(len(selected)))
 
@@ -25,14 +25,14 @@ def getScrapedData(person):
     if (len(matches) > 0):
         g.append_to_articleData(matches[0])
 
-def rerun(data):
+def runFiltersAndSort(data):
     filt = [x for x in data]
     for action in g.get_history():
         print("Performing action " + action[0])
-        if (action[0] == "experience" or action[0] == "sentence"):
-            filt = action[1](filt)
-        else:
-            filt = action[1](filt, action[2])
+        filt = action[1](filt, action[2])
+    for action in g.get_ordering_history():
+        print ("Performing action " + action[0])
+        filt = action[1](filt)
     return filt
 
 def printData():
